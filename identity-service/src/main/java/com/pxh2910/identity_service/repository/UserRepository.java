@@ -8,4 +8,6 @@ import com.pxh2910.identity_service.entity.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
 
+	boolean existsByUsername(String username);
+	
 }
