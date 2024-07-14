@@ -2,6 +2,8 @@ package com.pxh2910.identity_service.service;
 
 import java.util.List;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.pxh2910.identity_service.dto.request.UserCreationRequest;
@@ -33,6 +35,9 @@ public class UserService {
 		
 		User user = new User();
 		userMapper.createUser(user, request);
+		
+		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 
 		return userRepository.save(user);
 	}
