@@ -12,6 +12,8 @@ public enum ErrorCode {
 	USERNAME_INVALID(1003, "Username must be at least 3 character!"),
 	PASSWORD_INVALID(1004, "Mật khẩu ít nhất 8 kí tự!"),
 	
+	USER_NOT_EXISTED(1005, "User not existed..."),
+	
 	UNCATEGORIED_EXCEPTION(9999, "Uncategoried exception"),
 	
 	;
