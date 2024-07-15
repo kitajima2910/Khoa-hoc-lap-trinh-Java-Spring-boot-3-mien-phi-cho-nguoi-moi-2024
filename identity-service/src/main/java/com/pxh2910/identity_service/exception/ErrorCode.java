@@ -14,6 +14,8 @@ public enum ErrorCode {
 	
 	USER_NOT_EXISTED(1005, "User not existed..."),
 	
+	UNAUTHENTICATED(1006, "Unthenticated"),
+	
 	UNCATEGORIED_EXCEPTION(9999, "Uncategoried exception"),
 	
 	;
