@@ -4,11 +4,13 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -24,6 +26,7 @@ import com.pxh2910.identity_service.dto.request.AuthenticationRequest;
 import com.pxh2910.identity_service.dto.request.IntrospectRequest;
 import com.pxh2910.identity_service.dto.response.AuthenticationResponse;
 import com.pxh2910.identity_service.dto.response.IntrospectResponse;
+import com.pxh2910.identity_service.entity.User;
 import com.pxh2910.identity_service.exception.AppException;
 import com.pxh2910.identity_service.exception.ErrorCode;
 import com.pxh2910.identity_service.repository.UserRepository;
@@ -70,18 +73,21 @@ public class AuthenticationService {
 			throw new AppException(ErrorCode.UNAUTHENTICATED);
 		}
 
-		var token = generateToken(user.getUsername());
+		var token = generateToken(user);
 
 		return AuthenticationResponse.builder().token(token).authenticated(authenticated).build();
 	}
 
-	private String generateToken(String username) {
+	private String generateToken(User user) {
 
 		JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
 
-		JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder().subject(username).issuer("pxh2910").issueTime(new Date())
+		JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+				.subject(user.getUsername()).issuer("pxh2910")
+				.issueTime(new Date())
 				.expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()))
-				.claim("customClainm", "Custom").build();
+				.claim("scope", buildScope(user))
+				.build();
 
 		Payload payload = new Payload(jwtClaimsSet.toJSONObject());
 
@@ -95,6 +101,15 @@ public class AuthenticationService {
 		}
 
 		return jwsObject.serialize();
+	}
+	
+	private String buildScope(User user) {
+		StringJoiner stringJoiner = new StringJoiner(" ");
+		if (!CollectionUtils.isEmpty(user.getRoles())) {
+			user.getRoles().forEach(s -> stringJoiner.add(s));
+		}
+		
+		return stringJoiner.toString();
 	}
 
 }
