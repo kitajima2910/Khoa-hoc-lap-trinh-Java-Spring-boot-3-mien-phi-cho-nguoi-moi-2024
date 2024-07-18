@@ -33,12 +33,13 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 		httpSecurity.authorizeHttpRequests(request -> request
 				.requestMatchers(HttpMethod.POST, PUCLIC_ENDPOINT)
-				.permitAll().requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name()).anyRequest()
+				.permitAll().requestMatchers(HttpMethod.GET, "/users").hasAuthority("SCOPE_" + Role.ADMIN.name()).anyRequest()
 				.authenticated());
 
 		httpSecurity.oauth2ResourceServer(oauth2 -> {
 			oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
-					.jwtAuthenticationConverter(jwtAuthenticationConverter()));
+					.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+					.authenticationEntryPoint(new JwtAuthenticationEntryPoint());
 		});
 
 		httpSecurity.csrf(AbstractHttpConfigurer::disable);
@@ -49,7 +50,7 @@ public class SecurityConfig {
 	@Bean
 	JwtAuthenticationConverter jwtAuthenticationConverter() {
 		JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-		grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+		grantedAuthoritiesConverter.setAuthorityPrefix("SCOPE");
 
 		JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 		converter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
